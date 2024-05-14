@@ -1,0 +1,47 @@
+# python=3.9.19
+
+beautifulsoup4==4.12.2
+lxml==4.9.2
+numpy==1.24.3
+onnxruntime==1.15.1
+opencv_contrib_python==4.6.0.66
+opencv_python==4.8.0.76
+opencv_python_headless==4.8.0.76
+openpyxl==3.1.2
+Pillow==10.0.0
+premailer==3.10.0
+pyclipper==1.3.0.post4
+pyinstrument==4.5.1
+PyMuPDF==1.19.0
+python_docx==0.8.11
+PyYAML==6.0
+scipy
+Shapely==2.0.1
+
+# please also do the following
+
+# GPU
+# conda install cudatoolkit=11.2 cudnn=8.2
+# wget https://bj.bcebos.com/fastdeploy/release/wheels/fastdeploy_gpu_python-1.0.7-cp39-cp39-manylinux1_x86_64.whl
+
+# CPU
+# wget https://bj.bcebos.com/fastdeploy/release/wheels/fastdeploy_python-1.0.7-cp39-cp39-manylinux1_x86_64.whl
+
+# for latex
+tqdm>=4.47.0
+munch>=2.5.0
+torch @ https://download.pytorch.org/whl/cpu/torch-2.2.0%2Bcpu-cp311-cp311-linux_x86_64.whl
+requests>=2.22.0
+einops>=0.3.0
+x_transformers==0.15.0
+transformers>=4.18.0
+tokenizers>=0.13.0
+numpy>=1.19.5
+Pillow>=9.1.0
+PyYAML>=5.4.1
+pandas>=1.0.0
+timm==0.5.4
+albumentations>=0.5.2
+pyreadline3>=3.4.1
+
+# cnstd>=1.2.3.6
