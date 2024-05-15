@@ -15,7 +15,7 @@ from table.table_det import table
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-device = "cpu"
+device = "gpu"
 device_id = 0
 backend = 'default'
 
@@ -25,7 +25,7 @@ def load_model(layout_path, num_class, det_path, rec_path, rec_bs, formula_path,
     layout_params_file = os.path.join(layout_path, "model.pdiparams")
 
     layout_option = fd.RuntimeOption()
-    # layout_option.use_gpu(device_id)
+    layout_option.use_gpu(device_id)
     layout_option.set_cpu_thread_num(10)
 
     global layout_model
@@ -140,7 +140,7 @@ def load_model(layout_path, num_class, det_path, rec_path, rec_bs, formula_path,
     Analyzer = Latex2Text(
         formula_config = {'model_fp': formula_path},
         analyzer_config=dict(model_name='mfd',           model_type='yolov7', model_fp=anay_path), 
-        # device = 'gpu',
+        device = device,
     )
 
 

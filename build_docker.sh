@@ -1,0 +1,1 @@
+docker build -f Dockerfile -t pdf-document-convert:v0.1 .
