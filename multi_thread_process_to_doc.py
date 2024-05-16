@@ -319,7 +319,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('root_path', help='Path to the folder containing PDF files.')
     parser.add_argument('--use-multi-process', action='store_true', help='Whether to use multi-processing.')
-    parser.add_argument('--process-num', type=int, default=4, help='Number of processes to use.')
+    parser.add_argument('--process-num', type=int, default=1, help='Number of processes to use.')
     parser.add_argument('--layout-model-path', default='models/picodet_lcnet_x1_0_fgd_layout_cdla_infer', help='Path to the layout model.')
     parser.add_argument('--det-path', default='models/ch_PP-OCRv4_det_infer', help='Path to the detection model.')
     parser.add_argument('--rec-path', default='models/ch_PP-OCRv4_rec_infer', help='Path to the recognition model.')
@@ -350,4 +350,4 @@ if __name__ == '__main__':
                       args.rec_bs, args.formula_path, args.anay_path)) as pool:
         time1 = time.time()
         pool.map(process_predict, file_info)
-        print('------------all time:', time.time() - time1, '------------')
+        print(f"------------ file: {file_info} time cost: {time.time() - time1} ------------")

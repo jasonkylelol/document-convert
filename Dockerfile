@@ -23,3 +23,16 @@ RUN pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 RUN pip install timm==0.5.4 --no-deps -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 RUN rm -rf /wheels/
+
+ADD models models
+ADD cls cls
+ADD det det
+ADD latex latex
+ADD ppocr ppocr
+ADD rec rec
+ADD struc struc
+ADD table table
+ADD tools tools
+ADD config.yaml config.yaml
+ADD multi_thread_process_to_doc.py multi_thread_process_to_doc.py
+ADD utils.py utils.py
