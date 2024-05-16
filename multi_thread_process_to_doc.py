@@ -19,7 +19,17 @@ device = "gpu"
 device_id = 0
 backend = 'default'
 
-def load_model(layout_path, num_class, det_path, rec_path, rec_bs, formula_path, anay_path):
+def load_model(
+    layout_path = "/workspace/models/picodet_lcnet_x1_0_fgd_layout_cdla_infer",
+    num_class = 10,
+    det_path = "/workspace/models/ch_PP-OCRv4_det_infer",
+    rec_path = "/workspace/models/ch_PP-OCRv4_rec_infer",
+    rec_bs = 16,
+    formula_path = "/workspace/models/latex_rec.pth",
+    anay_path = "/workspace/models/mfd.pt",
+    ):
+    num_class = 10 if "cdla" in layout_path.lower() else 5
+
     # load layout model
     layout_model_file = os.path.join(layout_path, "model.pdmodel")
     layout_params_file = os.path.join(layout_path, "model.pdiparams")
@@ -169,7 +179,8 @@ def expand(pix, det_box, shape):
     return x0_, y0_, x1_, y1_
 
 
-def process_predict(pdf_info, img_idx=0):
+def process_predict(pdf_info, save_folder, img_idx=0):
+    print(f"pdf_info: {pdf_info} save_folder: {save_folder}")
     images = read_image(pdf_info[0])
     all_res = []
     start = time.time()
@@ -300,13 +311,13 @@ def process_predict(pdf_info, img_idx=0):
         end = time.time()
         # print(end - start)
 
-        save_structure_res(res_list, "output", pdf_info[1])
+        save_structure_res(res_list, save_folder, pdf_info[1])
         h, w, _ = image.shape
         res = sorted_layout_boxes(res_list, w)
         all_res += res
-    convert_info_md(images, all_res, "output", pdf_info[1])
+    convert_info_md(images, all_res, save_folder, pdf_info[1])
     # save all_res to json
-    with open(os.path.join(os.path.join("output", pdf_info[1]), 'res.pkl'), "wb") as f:
+    with open(os.path.join(os.path.join(save_folder, pdf_info[1]), 'res.pkl'), "wb") as f:
         pickle.dump({'data': all_res, 'name': pdf_info[0]}, f)
 
 # class NumpyEncoder(json.JSONEncoder):
@@ -341,13 +352,14 @@ if __name__ == '__main__':
 
     num_class = 10 if "cdla" in layout_model_path.lower() else 5
 
-    file_info = [(os.path.join(root_path, name), name) for name in file_names]
-
     with Pool(
             process_num,
             initializer=load_model,
             initargs=(layout_model_path, num_class, det_path, rec_path, 
                       args.rec_bs, args.formula_path, args.anay_path)) as pool:
         time1 = time.time()
-        pool.map(process_predict, file_info)
-        print(f"------------ file: {file_info} time cost: {time.time() - time1} ------------")
+        params = []
+        for name in file_names:
+            params.append(((os.path.join(root_path, name), name), "output"))
+        pool.starmap(process_predict, params)
+        print(f"------------ file: {file_names} time cost: {time.time() - time1} ------------")

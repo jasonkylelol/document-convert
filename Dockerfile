@@ -24,6 +24,14 @@ RUN pip install timm==0.5.4 --no-deps -i https://pypi.tuna.tsinghua.edu.cn/simpl
 
 RUN rm -rf /wheels/
 
+ADD build/Miniconda3-latest-Linux-x86_64.sh /root/miniconda3/miniconda_install.sh
+RUN bash /root/miniconda3/miniconda_install.sh -b -u -p /root/miniconda3
+RUN /root/miniconda3/bin/conda init bash
+RUN /root/miniconda3/bin/conda install -y -c tartansandal conda-bash-completion
+RUN rm -f /root/miniconda3/miniconda_install.sh
+COPY build/condarc /root/.condarc
+RUN /root/miniconda3/bin/conda create -y -n langchain python=3.11
+
 ADD models models
 ADD cls cls
 ADD det det

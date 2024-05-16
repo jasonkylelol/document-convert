@@ -1362,6 +1362,7 @@ class MarkdownDocument:
     def save(self, path):
         with open(path, 'w') as f:
             f.write(self.get_markdown())
+            f.flush()
         return
 
 
@@ -1387,7 +1388,7 @@ def convert_info_md(img, res, save_folder, img_name):
             md_out.add_bullet_list(txt_list)
         # else:
             
-    md_path = os.path.join(save_folder, f'{img_name}_ocr.md')
+    md_path = os.path.join(save_folder, f'{img_name}.md')
     md_out.save(md_path)
 
 from copy import deepcopy
