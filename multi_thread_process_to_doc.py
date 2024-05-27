@@ -5,8 +5,10 @@ import fastdeploy as fd
 from multiprocessing import Pool
 # from threading import Thread
 import pickle
-
+import shutil
+import json
 import numpy as np
+import cv2
 
 from latex.latex_rec import Latex2Text, sort_boxes
 from table.utils import TableMatch
@@ -165,6 +167,7 @@ def text_system(img, thre = 0.5):
             rec.append((result.text[i],result.rec_scores[i]))
     return bbox, rec, time.time() - time1
 
+
 def expand(pix, det_box, shape):
     x0, y0, x1, y1 = det_box
     h, w, c = shape
@@ -181,23 +184,30 @@ def expand(pix, det_box, shape):
 
 def process_predict(pdf_info, save_folder, img_idx=0):
     print(f"pdf_info: {pdf_info} save_folder: {save_folder}")
+
+    if os.path.exists(save_folder):
+        shutil.rmtree(save_folder)
+    os.makedirs(save_folder, exist_ok=True)
+
+    file_basename = pdf_info[1]
     images = read_image(pdf_info[0])
     all_res = []
     start = time.time()
-    for image in images:
+    for page_idx, image in enumerate(images):
         ori_im = image.copy()
         if layout_model is not None:
             layout_time1 = time.time()
             result = layout_model.predict(ori_im)
-            print('layout time:', time.time() - layout_time1)
+            print('layout time cost: {:.2f}'.format(time.time() - layout_time1))
             layout_res = []
             for i in range(len(result.label_ids)):
                 layout_res.append({'bbox': np.asarray(result.boxes[i]), 'label': layout_labels[result.label_ids[i]]})
+            # print('layout res:', layout_res)
         else:
             h, w = ori_im.shape[:2]
             layout_res = [dict(bbox=None, label='table')]
         res_list = []
-        for region in layout_res:
+        for region_idx, region in enumerate(layout_res):
             res = ''
             if region['bbox'] is not None:
                 x1, y1, x2, y2 = region['bbox']
@@ -206,6 +216,11 @@ def process_predict(pdf_info, save_folder, img_idx=0):
             else:
                 x1, y1, x2, y2 = 0, 0, w, h
                 roi_img = ori_im
+
+            roi_img_output = os.path.join("output", file_basename, "roi_img")
+            os.makedirs(roi_img_output, exist_ok=True)
+            cv2.imwrite(os.path.join(roi_img_output, f"{page_idx}_{region_idx}_{region['label']}.jpg"), roi_img)
+
             if region['label'] == 'table':
                 table_time1 = time.time()
 
@@ -227,18 +242,21 @@ def process_predict(pdf_info, save_folder, img_idx=0):
                     res = {'html': None}
                     region['label'] = 'figure'
                 res['html'] = Match(structure_res, dt_boxes, rec_res)
-                print('table time:', time.time() - table_time1)
+                print('table time: {:.2f}'.format(time.time() - table_time1))
 
             else:
-                
                 rec_time1 = time.time()
                 wht_im = np.ones(ori_im.shape, dtype=ori_im.dtype)
                 wht_im[y1:y2, x1:x2, :] = roi_img
 
-                lax_img, mf_out = Analyzer.recognize_by_cnstd(wht_im, resized_shape=608)
+                wht_img_output = os.path.join("output", file_basename, "wht_img")
+                os.makedirs(wht_img_output, exist_ok=True)
+                cv2.imwrite(os.path.join(wht_img_output, f"{page_idx}_{region_idx}_{region['label']}.jpg"), wht_im)
+
+                # lax_img, mf_out = Analyzer.recognize_by_cnstd(wht_im, resized_shape=608)
+                mf_out = None
 
                 if mf_out == None:
-
                     filter_boxes, filter_rec_res, ocr_time_dict = text_system(wht_im)
                     style_token = [
                         '<strike>', '<strike>', '<sup>', '</sub>', '<b>',
@@ -247,6 +265,7 @@ def process_predict(pdf_info, save_folder, img_idx=0):
                         '</i>'
                     ]
                     res = []
+                    full_res_str = ""
                     for box, rec_res in zip(filter_boxes, filter_rec_res):
                         rec_str, rec_conf = rec_res
                         for token in style_token:
@@ -258,10 +277,10 @@ def process_predict(pdf_info, save_folder, img_idx=0):
                             'confidence': float(rec_conf),
                             'text_region': box.tolist()
                         })
-                    print('rec time:', time.time() - rec_time1)
+                        full_res_str += rec_str
+                    print('{} rec time: {:.2f}'.format(region['label'], time.time() - rec_time1))
                 
                 else:
-                    
                     lax_img = np.array(lax_img)
                     filter_boxes, filter_rec_res, ocr_time_dict = text_system(lax_img)
                     style_token = [
@@ -299,7 +318,7 @@ def process_predict(pdf_info, save_folder, img_idx=0):
                         del i['position']
                         res.append(i)
                     
-                    print('rec time:', time.time() - rec_time1)
+                    print('latex? {} rec time: {:.2f}'.format(region['label'], time.time() - rec_time1))
 
             res_list.append({
                 'type': region['label'].lower(),
@@ -311,13 +330,13 @@ def process_predict(pdf_info, save_folder, img_idx=0):
         end = time.time()
         # print(end - start)
 
-        save_structure_res(res_list, save_folder, pdf_info[1])
+        save_structure_res(res_list, save_folder, file_basename)
         h, w, _ = image.shape
         res = sorted_layout_boxes(res_list, w)
         all_res += res
-    convert_info_md(images, all_res, save_folder, pdf_info[1])
+    convert_info_md(images, all_res, save_folder, file_basename)
     # save all_res to json
-    with open(os.path.join(os.path.join(save_folder, pdf_info[1]), 'res.pkl'), "wb") as f:
+    with open(os.path.join(os.path.join(save_folder, file_basename), 'res.pkl'), "wb") as f:
         pickle.dump({'data': all_res, 'name': pdf_info[0]}, f)
 
 # class NumpyEncoder(json.JSONEncoder):
@@ -357,9 +376,14 @@ if __name__ == '__main__':
             initializer=load_model,
             initargs=(layout_model_path, num_class, det_path, rec_path, 
                       args.rec_bs, args.formula_path, args.anay_path)) as pool:
+        print(f"layout_model: {layout_model_path}")
+        print(f"det: {det_path}")
+        print(f"rec: {rec_path}")
+        print(f"formula: {args.formula_path}")
+        print(f"anay: {args.anay_path}")
         time1 = time.time()
         params = []
         for name in file_names:
             params.append(((os.path.join(root_path, name), name), "output"))
         pool.starmap(process_predict, params)
-        print(f"------------ file: {file_names} time cost: {time.time() - time1} ------------")
+        print(f"file: {file_names} time cost: {(time.time() - time1):.2f}")

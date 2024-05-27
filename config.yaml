@@ -22,7 +22,7 @@ Det:
     score_mode: fast
 
 Cls:
-    use_cuda: falsetrue
+    use_cuda: true
 
     model_path: models/cls_infer.onnx
 

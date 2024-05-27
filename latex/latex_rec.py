@@ -653,7 +653,9 @@ class Latex2Text(object):
         w, h = img0.size
         ratio = resized_shape / w
         resized_shape = (int(h * ratio), resized_shape)  # (H, W)
+        # print(f"[latex.latex_rec.Latex2Text.recognize_by_cnstd] resized_shape: {resized_shape}")
         analyzer_outs = self.analyzer(img0.copy(), resized_shape=resized_shape, conf_threshold = 0.65)
+        # print(f"[latex.latex_rec.Latex2Text.recognize_by_cnstd] analyzer_outs: {analyzer_outs}")
 
         if not analyzer_outs:
             return None, None
