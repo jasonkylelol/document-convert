@@ -1414,10 +1414,10 @@ def read_image(image_file) -> list:
                 img = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
                 imgs.append(img)
 
-                basename = os.path.basename(image_file)
-                fitz_img_output = os.path.join("output", basename, "fitz_img")
-                os.makedirs(fitz_img_output, exist_ok=True)
-                cv2.imwrite(os.path.join(fitz_img_output, f"{pg}.jpg"), img)
+                # basename = os.path.basename(image_file)
+                # fitz_img_output = os.path.join("output", basename, "fitz_img")
+                # os.makedirs(fitz_img_output, exist_ok=True)
+                # cv2.imwrite(os.path.join(fitz_img_output, f"{pg}.jpg"), img)
     else:
         img = cv2.imread(image_file, cv2.IMREAD_COLOR)
         if img is not None:

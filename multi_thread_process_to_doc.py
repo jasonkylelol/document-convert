@@ -217,9 +217,9 @@ def process_predict(pdf_info, save_folder, img_idx=0):
                 x1, y1, x2, y2 = 0, 0, w, h
                 roi_img = ori_im
 
-            roi_img_output = os.path.join("output", file_basename, "roi_img")
-            os.makedirs(roi_img_output, exist_ok=True)
-            cv2.imwrite(os.path.join(roi_img_output, f"{page_idx}_{region_idx}_{region['label']}.jpg"), roi_img)
+            # roi_img_output = os.path.join("output", file_basename, "roi_img")
+            # os.makedirs(roi_img_output, exist_ok=True)
+            # cv2.imwrite(os.path.join(roi_img_output, f"{page_idx}_{region_idx}_{region['label']}.jpg"), roi_img)
 
             if region['label'] == 'table':
                 table_time1 = time.time()
@@ -249,13 +249,11 @@ def process_predict(pdf_info, save_folder, img_idx=0):
                 wht_im = np.ones(ori_im.shape, dtype=ori_im.dtype)
                 wht_im[y1:y2, x1:x2, :] = roi_img
 
-                wht_img_output = os.path.join("output", file_basename, "wht_img")
-                os.makedirs(wht_img_output, exist_ok=True)
-                cv2.imwrite(os.path.join(wht_img_output, f"{page_idx}_{region_idx}_{region['label']}.jpg"), wht_im)
+                # wht_img_output = os.path.join("output", file_basename, "wht_img")
+                # os.makedirs(wht_img_output, exist_ok=True)
+                # cv2.imwrite(os.path.join(wht_img_output, f"{page_idx}_{region_idx}_{region['label']}.jpg"), wht_im)
 
-                # lax_img, mf_out = Analyzer.recognize_by_cnstd(wht_im, resized_shape=608)
-                mf_out = None
-
+                lax_img, mf_out = Analyzer.recognize_by_cnstd(wht_im, resized_shape=608)
                 if mf_out == None:
                     filter_boxes, filter_rec_res, ocr_time_dict = text_system(wht_im)
                     style_token = [
