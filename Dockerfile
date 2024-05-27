@@ -32,6 +32,7 @@ RUN rm -f /root/miniconda3/miniconda_install.sh
 COPY build/condarc /root/.condarc
 RUN /root/miniconda3/bin/conda create -y -n langchain python=3.11
 
+# wget -c -t 100 -P /home/ https://github.com/AlibabaResearch/AdvancedLiterateMachinery/releases/download/v1.2.0-docX-release/DocXLayout_231012.pth
 ADD models models
 ADD cls cls
 ADD det det
@@ -41,6 +42,8 @@ ADD rec rec
 ADD struc struc
 ADD table table
 ADD tools tools
+ADD docx_chain docx_chain
 ADD config.yaml config.yaml
-ADD multi_thread_process_to_doc.py multi_thread_process_to_doc.py
+# ADD multi_thread_process_to_doc.py multi_thread_process_to_doc.py
+ADD custom_convert.py custom_convert.py
 ADD utils.py utils.py

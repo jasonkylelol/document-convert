@@ -1,5 +1,5 @@
 import argparse
-import os
+import os, sys
 import time
 import fastdeploy as fd
 from multiprocessing import Pool
@@ -15,14 +15,34 @@ from table.utils import TableMatch
 from utils import convert_info_docx, convert_info_md, download_and_extract_models, read_image, read_yaml, save_structure_res, sorted_layout_boxes
 from table.table_det import table
 
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
+from docx_chain.modules.layout_analysis import LayoutAnalysis
 
 device = "gpu"
 device_id = 0
 backend = 'default'
 
+label_conversion = {
+    "title": "title",
+    "figure": "figure",
+    "plain text": "text",
+    "header": "header",
+    "page number": "page_number",
+    "footnote": "footer",
+    "footer": "footer",
+    "table": "table",
+    "table caption": "table_caption",
+    "figure caption": "figure_caption",
+    "equation": "equation",
+    "full column": "full_column",
+    "sub column": "sub_column"
+}
+
+# "text", "title", "figure", "figure_caption", "table", "table_caption",
+#     "header", "footer", "reference", "equation"
+
 def load_model(
-    layout_path = "/workspace/models/picodet_lcnet_x1_0_fgd_layout_cdla_infer",
+    # layout_path = "/workspace/models/picodet_lcnet_x1_0_fgd_layout_cdla_infer",
+    layout_path = "/workspace/models/docx_layout_231012.pth",
     num_class = 10,
     det_path = "/workspace/models/ch_PP-OCRv4_det_infer",
     rec_path = "/workspace/models/ch_PP-OCRv4_rec_infer",
@@ -30,29 +50,31 @@ def load_model(
     formula_path = "/workspace/models/latex_rec.pth",
     anay_path = "/workspace/models/mfd.pt",
     ):
-    num_class = 10 if "cdla" in layout_path.lower() else 5
-
     # load layout model
-    layout_model_file = os.path.join(layout_path, "model.pdmodel")
-    layout_params_file = os.path.join(layout_path, "model.pdiparams")
-
-    layout_option = fd.RuntimeOption()
-    layout_option.use_gpu(device_id)
-    layout_option.set_cpu_thread_num(10)
-
     global layout_model
-    layout_model = fd.vision.ocr.StructureV2Layout(
-        layout_model_file, layout_params_file, layout_option)
 
-    layout_model.postprocessor.num_class = num_class
+    # num_class = 10 if "cdla" in layout_path.lower() else 5
+    # layout_model_file = os.path.join(layout_path, "model.pdmodel")
+    # layout_params_file = os.path.join(layout_path, "model.pdiparams")
+    # layout_option = fd.RuntimeOption()
+    # layout_option.use_gpu(device_id)
+    # layout_option.set_cpu_thread_num(10)
+    # layout_model = fd.vision.ocr.StructureV2Layout(
+    #     layout_model_file, layout_params_file, layout_option)
+    # layout_model.postprocessor.num_class = num_class
+    # global layout_labels
+    # layout_labels = ["text", "title", "list", "table", "figure"]
+    # if num_class == 10:
+    #     layout_labels = [
+    #         "text", "title", "figure", "figure_caption", "table", "table_caption",
+    #         "header", "footer", "reference", "equation"
+    #     ]
     
-    global layout_labels
-    layout_labels = ["text", "title", "list", "table", "figure"]
-    if num_class == 10:
-        layout_labels = [
-            "text", "title", "figure", "figure_caption", "table", "table_caption",
-            "header", "footer", "reference", "equation"
-        ]
+    layout_analysis_config = {
+        'from_modelscope_flag': False,
+        'model_path': layout_path,
+    }
+    layout_model = LayoutAnalysis(layout_analysis_config)
 
     # load det & rec model
     det_model_file = os.path.join(det_path, "inference.pdmodel")
@@ -197,11 +219,24 @@ def process_predict(pdf_info, save_folder, img_idx=0):
         ori_im = image.copy()
         if layout_model is not None:
             layout_time1 = time.time()
-            result = layout_model.predict(ori_im)
-            print('layout time cost: {:.2f}'.format(time.time() - layout_time1))
+            # result = layout_model.predict(ori_im)
+            la_result = layout_model(ori_im)
+            # print(la_result)
+            layout_dets = la_result['layout_dets']
             layout_res = []
-            for i in range(len(result.label_ids)):
-                layout_res.append({'bbox': np.asarray(result.boxes[i]), 'label': layout_labels[result.label_ids[i]]})
+            for idx, layout_det in enumerate(layout_dets):
+                category_id = layout_det['category_id']
+                category_name = layout_model.mapping(category_id)
+                category_name = label_conversion.get(category_name, category_name)
+                poly = layout_det['poly']
+                bbox = [poly[0], poly[1], poly[4], poly[5]]
+                layout_res.append({'bbox': np.asarray(bbox), 'label': category_name})
+            # print(layout_res)
+            print('layout time cost: {:.2f}'.format(time.time() - layout_time1))
+
+            # layout_res = []
+            # for i in range(len(result.label_ids)):
+            #     layout_res.append({'bbox': np.asarray(result.boxes[i]), 'label': layout_labels[result.label_ids[i]]})
             # print('layout res:', layout_res)
         else:
             h, w = ori_im.shape[:2]
@@ -217,7 +252,7 @@ def process_predict(pdf_info, save_folder, img_idx=0):
                 x1, y1, x2, y2 = 0, 0, w, h
                 roi_img = ori_im
 
-            roi_img_output = os.path.join("output", file_basename, "roi_img_v1")
+            roi_img_output = os.path.join("output", file_basename, "roi_img_v2")
             os.makedirs(roi_img_output, exist_ok=True)
             cv2.imwrite(os.path.join(roi_img_output, f"{page_idx}_{region_idx}_{region['label']}.jpg"), roi_img)
 
@@ -328,60 +363,17 @@ def process_predict(pdf_info, save_folder, img_idx=0):
         end = time.time()
         # print(end - start)
 
-        save_structure_res(res_list, save_folder, file_basename)
+        # save_structure_res(res_list, save_folder, file_basename)
         h, w, _ = image.shape
         res = sorted_layout_boxes(res_list, w)
         all_res += res
-    convert_info_md(images, all_res, save_folder, file_basename)
+    convert_info_md(images, all_res, save_folder, f"{file_basename}_v2")
     # save all_res to json
-    with open(os.path.join(os.path.join(save_folder, file_basename), 'res.pkl'), "wb") as f:
-        pickle.dump({'data': all_res, 'name': pdf_info[0]}, f)
+    # with open(os.path.join(os.path.join(save_folder, file_basename), f"res_v2.pkl"), "wb") as f:
+    #     pickle.dump({'data': all_res, 'name': pdf_info[0]}, f)
 
-# class NumpyEncoder(json.JSONEncoder):
-#     def default(self, obj):
-#         if isinstance(obj, np.ndarray):
-#             return obj.tolist()
-#         return json.JSONEncoder.default(self, obj)
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('root_path', help='Path to the folder containing PDF files.')
-    parser.add_argument('--use-multi-process', action='store_true', help='Whether to use multi-processing.')
-    parser.add_argument('--process-num', type=int, default=1, help='Number of processes to use.')
-    parser.add_argument('--layout-model-path', default='models/picodet_lcnet_x1_0_fgd_layout_cdla_infer', help='Path to the layout model.')
-    parser.add_argument('--det-path', default='models/ch_PP-OCRv4_det_infer', help='Path to the detection model.')
-    parser.add_argument('--rec-path', default='models/ch_PP-OCRv4_rec_infer', help='Path to the recognition model.')
-    parser.add_argument('--formula-path', default='models/latex_rec.pth', help='Path to the LaTeX recognition model.')
-    parser.add_argument('--anay-path', default='models/mfd.pt', help='Path to the analysis model.')
-    parser.add_argument('--rec-bs', type=int, default=16, help='Recognition batch size.')
-    args = parser.parse_args()
-
-    download_and_extract_models()
-
-    use_multi_process = args.use_multi_process
-    process_num = args.process_num
-    root_path = args.root_path
-    file_names = os.listdir(root_path)
-
-    layout_model_path = args.layout_model_path
-    det_path = args.det_path
-    rec_path = args.rec_path
-
-    num_class = 10 if "cdla" in layout_model_path.lower() else 5
-
-    with Pool(
-            process_num,
-            initializer=load_model,
-            initargs=(layout_model_path, num_class, det_path, rec_path, 
-                      args.rec_bs, args.formula_path, args.anay_path)) as pool:
-        print(f"layout_model: {layout_model_path}")
-        print(f"det: {det_path}")
-        print(f"rec: {rec_path}")
-        print(f"formula: {args.formula_path}")
-        print(f"anay: {args.anay_path}")
-        time1 = time.time()
-        params = []
-        for name in file_names:
-            params.append(((os.path.join(root_path, name), name), "output"))
-        pool.starmap(process_predict, params)
-        print(f"file: {file_names} time cost: {(time.time() - time1):.2f}")
+    load_model()
+    input_file = "input/科大讯飞2023半年报.pdf"
+    process_predict((input_file, os.path.basename(input_file)), "output")
