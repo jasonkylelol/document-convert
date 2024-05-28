@@ -868,6 +868,7 @@ class TableMatch:
         self.use_master = use_master
 
     def __call__(self, structure_res, dt_boxes, rec_res):
+        # print(f"[TableMatch] {structure_res}")
         pred_structures, pred_bboxes = structure_res
         if self.filter_ocr_result:
             dt_boxes, rec_res = self._filter_ocr_result(pred_bboxes, dt_boxes,

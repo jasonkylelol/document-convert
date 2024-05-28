@@ -1386,7 +1386,8 @@ def convert_info_md(img, res, save_folder, img_name):
         elif region['type'].lower() == 'list':
             txt_list = [it['text'] for it in region['res']]
             md_out.add_bullet_list(txt_list)
-        # else:
+        else:
+            print(f"[convert_info_md] ignore {region['type'].lower()}")
             
     md_path = os.path.join(save_folder, f'{img_name}.md')
     md_out.save(md_path)

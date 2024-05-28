@@ -13,7 +13,7 @@ import cv2
 from latex.latex_rec import Latex2Text, sort_boxes
 from table.utils import TableMatch
 from utils import convert_info_docx, convert_info_md, download_and_extract_models, read_image, read_yaml, save_structure_res, sorted_layout_boxes
-from table.table_det import table
+from table.table_det import Table
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -143,7 +143,7 @@ def load_model(
     # load table model
     config = read_yaml(r'config.yaml')
     global table_structurer
-    table_structurer = table(config['Table'])
+    table_structurer = Table(config['Table'])
 
     global Match
     Match = TableMatch(filter_ocr_result=True)

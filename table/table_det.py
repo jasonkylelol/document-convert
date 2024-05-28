@@ -34,7 +34,7 @@ class RebuildTable(object):
 
         self.text_detector = det
         self.text_recognizer = rec
-        self.table_structurer = table(args)
+        self.table_structurer = Table(args)
         
         self.match = TableMatch(filter_ocr_result=True)
 
@@ -99,8 +99,7 @@ class RebuildTable(object):
         return dt_boxes, rec_res, det_elapse, rec_elapse
 
 
-
-class table:
+class Table:
     def __init__(self, config):
 
         session = OrtInferSession(config)
@@ -144,6 +143,7 @@ class table:
         self.preprocess_op = create_operators(pre_process_list)
         self.postprocess_op = build_post_process(postprocess_params)
 
+
     def __call__(self, img):
         starttime = time.time()
         # if self.args.benchmark:
@@ -170,9 +170,12 @@ class table:
         structure_str_list = post_result['structure_batch_list'][0]
         bbox_list = post_result['bbox_batch_list'][0]
         structure_str_list = structure_str_list[0]
-        structure_str_list = [
-            '<html>', '<body>', '<table>'
-        ] + structure_str_list + ['</table>', '</body>', '</html>']
+        # structure_str_list = [
+        #     '<html>', '<body>', '<table>'
+        # ] + structure_str_list + ['</table>', '</body>', '</html>']
+        
+        # use only <table> to wrap structures
+        structure_str_list = ['<table>'] + structure_str_list + ['</table>']
         elapse = time.time() - starttime
         # if self.args.benchmark:
         #     self.autolog.times.end(stamp=True)

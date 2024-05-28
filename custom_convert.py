@@ -12,9 +12,16 @@ import cv2
 
 from latex.latex_rec import Latex2Text, sort_boxes
 from table.utils import TableMatch
-from utils import convert_info_docx, convert_info_md, download_and_extract_models, read_image, read_yaml, save_structure_res, sorted_layout_boxes
-from table.table_det import table
-
+from utils import (
+    convert_info_docx,
+    convert_info_md,
+    download_and_extract_models,
+    read_image,
+    read_yaml,
+    save_structure_res,
+    sorted_layout_boxes,
+)
+from table.table_det import Table
 from docx_chain.modules.layout_analysis import LayoutAnalysis
 
 device = "gpu"
@@ -164,13 +171,13 @@ def load_model(
     # load table model
     config = read_yaml(r'config.yaml')
     global table_structurer
-    table_structurer = table(config['Table'])
+    table_structurer = Table(config['Table'])
 
-    global Match
-    Match = TableMatch(filter_ocr_result=True)
+    global table_match
+    table_match = TableMatch(filter_ocr_result=True)
 
-    global Analyzer
-    Analyzer = Latex2Text(
+    global latex_analyzer
+    latex_analyzer = Latex2Text(
         formula_config = {'model_fp': formula_path},
         analyzer_config=dict(model_name='mfd',           model_type='yolov7', model_fp=anay_path), 
         device = device,
@@ -275,7 +282,7 @@ def process_predict(pdf_info, save_folder, img_idx=0):
                 if dt_boxes is None:
                     res = {'html': None}
                     region['label'] = 'figure'
-                res['html'] = Match(structure_res, dt_boxes, rec_res)
+                res['html'] = table_match(structure_res, dt_boxes, rec_res)
                 print('[table] rec time: {:.2f}'.format(time.time() - table_time1))
 
             else:
@@ -287,7 +294,7 @@ def process_predict(pdf_info, save_folder, img_idx=0):
                 # os.makedirs(wht_img_output, exist_ok=True)
                 # cv2.imwrite(os.path.join(wht_img_output, f"{page_idx}_{region_idx}_{region['label']}.jpg"), wht_im)
 
-                lax_img, mf_out = Analyzer.recognize_by_cnstd(wht_im, resized_shape=608)
+                lax_img, mf_out = latex_analyzer.recognize_by_cnstd(wht_im, resized_shape=608)
                 if mf_out == None:
                     filter_boxes, filter_rec_res, ocr_time_dict = text_system(wht_im)
                     style_token = [
@@ -366,7 +373,7 @@ def process_predict(pdf_info, save_folder, img_idx=0):
         h, w, _ = image.shape
         res = sorted_layout_boxes(res_list, w)
         all_res += res
-    convert_info_md(images, all_res, save_folder, f"{file_basename}_v2")
+    convert_info_md(images, all_res, save_folder, f"{file_basename}")
     # save all_res to json
     # with open(os.path.join(os.path.join(save_folder, file_basename), f"res_v2.pkl"), "wb") as f:
     #     pickle.dump({'data': all_res, 'name': pdf_info[0]}, f)
