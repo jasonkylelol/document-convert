@@ -37,8 +37,7 @@ label_conversion = {
     "sub column": "sub_column"
 }
 
-# "text", "title", "figure", "figure_caption", "table", "table_caption",
-#     "header", "footer", "reference", "equation"
+# "text", "title", "figure", "figure_caption", "table", "table_caption", "header", "footer", "reference", "equation"
 
 def load_model(
     # layout_path = "/workspace/models/picodet_lcnet_x1_0_fgd_layout_cdla_infer",
@@ -232,7 +231,7 @@ def process_predict(pdf_info, save_folder, img_idx=0):
                 bbox = [poly[0], poly[1], poly[4], poly[5]]
                 layout_res.append({'bbox': np.asarray(bbox), 'label': category_name})
             # print(layout_res)
-            print('layout time cost: {:.2f}'.format(time.time() - layout_time1))
+            print('[layout] time cost: {:.2f}'.format(time.time() - layout_time1))
 
             # layout_res = []
             # for i in range(len(result.label_ids)):
@@ -277,7 +276,7 @@ def process_predict(pdf_info, save_folder, img_idx=0):
                     res = {'html': None}
                     region['label'] = 'figure'
                 res['html'] = Match(structure_res, dt_boxes, rec_res)
-                print('table time: {:.2f}'.format(time.time() - table_time1))
+                print('[table] rec time: {:.2f}'.format(time.time() - table_time1))
 
             else:
                 rec_time1 = time.time()
@@ -311,7 +310,7 @@ def process_predict(pdf_info, save_folder, img_idx=0):
                             'text_region': box.tolist()
                         })
                         full_res_str += rec_str
-                    print('{} rec time: {:.2f}'.format(region['label'], time.time() - rec_time1))
+                    print('[{}] rec time: {:.2f}'.format(region['label'], time.time() - rec_time1))
                 
                 else:
                     lax_img = np.array(lax_img)
@@ -351,7 +350,7 @@ def process_predict(pdf_info, save_folder, img_idx=0):
                         del i['position']
                         res.append(i)
                     
-                    print('latex? {} rec time: {:.2f}'.format(region['label'], time.time() - rec_time1))
+                    print('[{}] rec time: {:.2f}'.format(region['label'], time.time() - rec_time1))
 
             res_list.append({
                 'type': region['label'].lower(),
