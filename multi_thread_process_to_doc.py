@@ -12,7 +12,15 @@ import cv2
 
 from latex.latex_rec import Latex2Text, sort_boxes
 from table.utils import TableMatch
-from utils import convert_info_docx, convert_info_md, download_and_extract_models, read_image, read_yaml, save_structure_res, sorted_layout_boxes
+from utils import (
+    convert_info_docx,
+    convert_info_md,
+    download_and_extract_models,
+    read_image,
+    read_yaml,
+    save_structure_res,
+    sorted_layout_boxes,
+)
 from table.table_det import Table
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -145,11 +153,11 @@ def load_model(
     global table_structurer
     table_structurer = Table(config['Table'])
 
-    global Match
-    Match = TableMatch(filter_ocr_result=True)
+    global table_match
+    table_match = TableMatch(filter_ocr_result=True)
 
-    global Analyzer
-    Analyzer = Latex2Text(
+    global latex_analyzer
+    latex_analyzer = Latex2Text(
         formula_config = {'model_fp': formula_path},
         analyzer_config=dict(model_name='mfd',           model_type='yolov7', model_fp=anay_path), 
         device = device,
@@ -241,7 +249,7 @@ def process_predict(pdf_info, save_folder, img_idx=0):
                 if dt_boxes is None:
                     res = {'html': None}
                     region['label'] = 'figure'
-                res['html'] = Match(structure_res, dt_boxes, rec_res)
+                res['html'] = table_match(structure_res, dt_boxes, rec_res)
                 print('table time: {:.2f}'.format(time.time() - table_time1))
 
             else:
@@ -253,7 +261,7 @@ def process_predict(pdf_info, save_folder, img_idx=0):
                 # os.makedirs(wht_img_output, exist_ok=True)
                 # cv2.imwrite(os.path.join(wht_img_output, f"{page_idx}_{region_idx}_{region['label']}.jpg"), wht_im)
 
-                lax_img, mf_out = Analyzer.recognize_by_cnstd(wht_im, resized_shape=608)
+                lax_img, mf_out = latex_analyzer.recognize_by_cnstd(wht_im, resized_shape=608)
                 if mf_out == None:
                     filter_boxes, filter_rec_res, ocr_time_dict = text_system(wht_im)
                     style_token = [
