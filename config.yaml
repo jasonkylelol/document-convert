@@ -40,7 +40,7 @@ Rec:
     rec_batch_num: 6
 
 Table:
-    model_path: models/table_infer_en.onnx
+    model_path: /workspace/models/table_infer_en.onnx
 
     use_cuda: true
     # Details of the params: https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html
@@ -52,7 +52,7 @@ Table:
 
     table_algorithm: TableAttn
     table_max_len: 488
-    table_char_dict_path: table/table_structure_dict.txt
+    table_char_dict_path: /workspace/table/table_structure_dict.txt
     merge_no_span_structure: true
 
 PP_Table:
