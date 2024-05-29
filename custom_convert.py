@@ -169,7 +169,7 @@ def load_model(
         ppocr.rec_batch_size = rec_bs
 
     # load table model
-    config = read_yaml(r'config.yaml')
+    config = read_yaml(r"/workspace/config.yaml")
     global table_structurer
     table_structurer = Table(config['Table'])
 
