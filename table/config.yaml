@@ -1,4 +1,4 @@
-model_path: models/en_ppstructure_mobile_v2_SLANet.onnx
+model_path: /workspace/models/en_ppstructure_mobile_v2_SLANet.onnx
 
 use_cuda: false
 # Details of the params: https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html
@@ -10,5 +10,5 @@ CUDAExecutionProvider:
 
 table_algorithm: TableAttn
 table_max_len: 488
-table_char_dict_path: table/table_structure_dict.txt
+table_char_dict_path: /workspace/table/table_structure_dict.txt
 merge_no_span_structure: true

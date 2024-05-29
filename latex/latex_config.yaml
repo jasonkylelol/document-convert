@@ -50,6 +50,6 @@ encoder_structure: hybrid
 temperature: 0.2
 test_samples: 5
 testbatchsize: 20
-tokenizer: latex/tokenizer.json
+tokenizer: /workspace/latex/tokenizer.json
 valbatches: 100
 valdata: dataset/data/val.pkl

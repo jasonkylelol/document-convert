@@ -179,7 +179,7 @@ def load_model(
     global latex_analyzer
     latex_analyzer = Latex2Text(
         formula_config = {'model_fp': formula_path},
-        analyzer_config=dict(model_name='mfd',           model_type='yolov7', model_fp=anay_path), 
+        analyzer_config=dict(model_name='mfd', model_type='yolov7', model_fp=anay_path), 
         device = device,
     )
 
