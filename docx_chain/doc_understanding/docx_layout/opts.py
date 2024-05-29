@@ -288,7 +288,7 @@ class opts(object):
         opt.test_scales = [float(i) for i in opt.test_scales.split(',')]
 
         opt.fix_res = not opt.keep_res
-        print('Fix size testing.' if opt.fix_res else 'Keep resolution testing.')
+        # print('Fix size testing.' if opt.fix_res else 'Keep resolution testing.')
         opt.reg_offset = not opt.not_reg_offset
         opt.reg_bbox = not opt.not_reg_bbox
         opt.hm_hp = not opt.not_hm_hp
@@ -317,7 +317,7 @@ class opts(object):
             if i < rest_batch_size % (len(opt.gpus) - 1):
                 slave_chunk_size += 1
             opt.chunk_sizes.append(slave_chunk_size)
-        print('training chunk_sizes:', opt.chunk_sizes)
+        # print('training chunk_sizes:', opt.chunk_sizes)
 
         opt.root_dir = os.path.join(os.path.dirname(__file__), '..', '..')
         opt.data_dir = os.path.join(opt.root_dir, 'data') if opt.data_src == "default" else opt.data_src
@@ -399,7 +399,7 @@ class opts(object):
                 opt.heads.update({'reg_sub': 2})
         else:
             assert 0, 'task not defined!'
-        print('heads', opt.heads)
+        # print('heads', opt.heads)
         return opt
 
 

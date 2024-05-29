@@ -16,7 +16,6 @@ import json
 
 from wrapper import wrap_result
 
-logger = logging.getLogger(__name__)
 time_stats = ['tot', 'load', 'pre', 'net', 'dec', 'post', 'merge']
 
 class DocXLayoutInfo:
@@ -49,13 +48,7 @@ class DocXLayoutPredictor:
         self.detector = detector
         self.opt = opt
         
-        logging.basicConfig(
-            format="%(asctime)s - %(levelname)s - %(name)s -   %(message)s",
-            datefmt="%m/%d/%Y %H:%M:%S",
-            level=logging.INFO,
-            handlers=[logging.StreamHandler(sys.stdout)],
-        )
-        logger.info("Training parameters %s", new_params)
+        # print(f"Training parameters {new_params}")
         
     def convert_eval_format(self, all_bboxes, opt):
         layout_detection_items = []
@@ -84,20 +77,20 @@ class DocXLayoutPredictor:
         
     def predict(self, content):
         try:
-            logger.info("Running DocXlayout")
+            print("Running DocXlayout")
             content_json = json.loads(content)
             image_name = content_json['image_name']
             ret = self.detector.run(image_name)
-            logger.info("DocXlayout Detector Done")
+            print("DocXlayout Detector Done")
             time_str = ''
             for stat in time_stats:
                 time_str = time_str + '{} {:.3f}s |'.format(stat, ret[stat])
             layout_detection_info, subfield_detection_info = self.convert_eval_format(ret['results'], self.opt)
             result = {"code":200,"layout_dets":layout_detection_info,"subfield_dets":subfield_detection_info,"time":time_str,"errMsg":"success"}
-            logger.info("DocXlayout Finish")
+            print("DocXlayout Finish")
             return result
         except Exception as e:
-            logger.info("DocXlayout Error %s", repr(e))
+            print("DocXlayout Error %s", repr(e))
             return {"code":404,"data":None,"errMsg": repr(e)}
 
     def __call__(self, image):

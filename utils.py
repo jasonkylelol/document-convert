@@ -1371,10 +1371,11 @@ def convert_info_md(img, res, save_folder, img_name):
     for i, region in enumerate(res):
         if region['type'].lower() == 'figure':
             try:
-                fig_path = os.path.join(img_name, f"{region['bbox']}_0.jpg")
-            except:
-                fig_path = ""
-            md_out.add_figure(fig_path)
+                bbox_name = '-'.join(f"{box}" for box in region['bbox'])
+                fig_path = os.path.join(".", img_name, f"{bbox_name}_0.jpg")
+                md_out.add_figure(fig_path)
+            except Exception as e:
+                print(f"[convert_info_md] add figure exception: {e}")
         elif region['type'].lower() == 'table':
             md_out.add_table(region['res']['html'])
         elif region['type'].lower() == 'text':
@@ -1386,8 +1387,13 @@ def convert_info_md(img, res, save_folder, img_name):
         elif region['type'].lower() == 'list':
             txt_list = [it['text'] for it in region['res']]
             md_out.add_bullet_list(txt_list)
+        # elif region['type'].lower() in ['table_caption', 'figure_caption']:
+        #     txt = ' '.join(it['text'] for it in region['res'])
+        #     md_out.add_title(txt, level=3)
         else:
-            print(f"[convert_info_md] ignore {region['type'].lower()}")
+            pass
+            # txt = '\n'.join(it.get('text') for it in region['res'])
+            # print(f"[convert_info_md] ignore {region['type'].lower()} : {txt}")
             
     md_path = os.path.join(save_folder, f'{img_name}.md')
     md_out.save(md_path)
@@ -1427,16 +1433,16 @@ def read_image(image_file) -> list:
     return imgs
 
 
-def save_structure_res(res, save_folder, img_name, img_idx=0):
-    excel_save_folder = os.path.join(save_folder, img_name)
-    os.makedirs(excel_save_folder, exist_ok=True)
+def save_structure_res(res, save_folder, img_name, img_idx=None):
+    resource_save_folder = os.path.join(save_folder, img_name)
+    os.makedirs(resource_save_folder, exist_ok=True)
     res_cp = deepcopy(res)
     # save res
-    with open(
-            os.path.join(excel_save_folder, 'res_{}.txt'.format(img_idx)),
-            'w',
-            encoding='utf8') as f:
-        for region in res_cp:
+    res_txt = "res.txt"
+    if img_idx:
+        res_txt = "res_{}.txt".format(img_idx)
+    with open(os.path.join(resource_save_folder, res_txt), 'w', encoding='utf8') as f:
+        for idx, region in enumerate(res_cp):
             roi_img = region.pop('img')
             try:
                 f.write('{}\n'.format(json.dumps(region)))
@@ -1446,21 +1452,46 @@ def save_structure_res(res, save_folder, img_name, img_idx=0):
 
             if region['type'].lower() == 'table' and len(region[
                     'res']) > 0 and 'html' in region['res']:
+                caption = pick_caption(region, res_cp, idx)
                 if region['res']['html'] is None:
-                    img_path = os.path.join(
-                        excel_save_folder,
-                        '{}_{}.jpg'.format(region['bbox'], img_idx))
+                    img_name = f"{caption}.jpg"
+                    if img_idx:
+                        img_name = "{}_{}.jpg".format(caption, img_idx)
+                    img_path = os.path.join(resource_save_folder, img_name)
                     cv2.imwrite(img_path, roi_img)
                 else:
-                    excel_path = os.path.join(
-                        excel_save_folder,
-                        '{}_{}.xlsx'.format(region['bbox'], img_idx))
+                    excel_name = f"{caption}.xlsx"
+                    if img_idx:
+                        excel_name = "{}_{}.xlsx".format(caption, img_idx)
+                    excel_path = os.path.join(resource_save_folder, excel_name)
                     to_excel(region['res']['html'], excel_path)
             elif region['type'].lower() == 'figure':
-                img_path = os.path.join(
-                    excel_save_folder,
-                    '{}_{}.jpg'.format(region['bbox'], img_idx))
+                caption = pick_caption(region, res_cp, idx)
+                img_name = f"{caption}.jpg"
+                if img_idx:
+                    img_name = "{}_{}.jpg".format(caption, img_idx)
+                img_path = os.path.join(resource_save_folder,img_name)
                 cv2.imwrite(img_path, roi_img)
-                
+
+
+def pick_caption(region, res, idx):
+    region_type = region['type'].lower()
+    caption_type = f"{region_type}_caption"
+    last_region_idx = idx - 1
+    while 0 <= last_region_idx < len(res):
+        next_region_idx = idx + (idx - last_region_idx)
+        region_idx_options = [last_region_idx, next_region_idx]
+        for picked_region_idx in region_idx_options:
+            if 0 <= picked_region_idx < len(res):
+                picked_region = res[picked_region_idx]
+                # print(f"idx: {picked_region_idx} region_type: {region_type}, {picked_region['type'].lower()}")
+                if picked_region['type'].lower() == caption_type:
+                    caption = ' '.join(it['text'] for it in picked_region['res'])
+                    return caption
+        last_region_idx -= 1
+    bbox_name = '-'.join(f"{box}" for box in region['bbox'])
+    return bbox_name
+
+
 def to_excel(html_table, excel_path):
     document_to_xl(html_table, excel_path)

@@ -190,7 +190,8 @@ def text_system(img, thre = 0.5):
     bbox = []
     rec = []
     for i in range(len(result.rec_scores)):
-        if result.rec_scores[i] > thre:
+        if result.rec_scores[i] > thre and i < len(result.boxes) \
+            and i < len(result.text):
             bbox.append(np.reshape(result.boxes[i], (4, 2)))
             rec.append((result.text[i],result.rec_scores[i]))
     return bbox, rec, time.time() - time1
@@ -258,7 +259,7 @@ def process_predict(pdf_info, save_folder, img_idx=0):
                 x1, y1, x2, y2 = 0, 0, w, h
                 roi_img = ori_im
 
-            roi_img_output = os.path.join("output", file_basename, "roi_img_v2")
+            roi_img_output = os.path.join("output", file_basename, "roi_img")
             os.makedirs(roi_img_output, exist_ok=True)
             cv2.imwrite(os.path.join(roi_img_output, f"{page_idx}_{region_idx}_{region['label']}.jpg"), roi_img)
 
@@ -368,11 +369,11 @@ def process_predict(pdf_info, save_folder, img_idx=0):
             })
         end = time.time()
         # print(end - start)
-
-        # save_structure_res(res_list, save_folder, file_basename)
         h, w, _ = image.shape
         res = sorted_layout_boxes(res_list, w)
         all_res += res
+
+    save_structure_res(all_res, save_folder, file_basename)
     convert_info_md(images, all_res, save_folder, f"{file_basename}")
     # save all_res to json
     # with open(os.path.join(os.path.join(save_folder, file_basename), f"res_v2.pkl"), "wb") as f:
@@ -380,6 +381,13 @@ def process_predict(pdf_info, save_folder, img_idx=0):
 
 
 if __name__ == '__main__':
+    if len(sys.argv) != 2:
+        raise ValueError("[custom_convert.py input_file] Exactly one input file is required")
+    
+    input_file = sys.argv[1]
+    
+    if not input_file:
+        raise ValueError("[custom_convert.py input_file] input file cannot be empty")
+
     load_model()
-    input_file = "input/科大讯飞2023半年报.pdf"
     process_predict((input_file, os.path.basename(input_file)), "output")
