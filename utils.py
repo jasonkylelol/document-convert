@@ -1331,14 +1331,14 @@ class MarkdownDocument:
     def __init__(self):
         self.content = ""
 
-    def add_figure(self, figure=None):
+    def add_figure(self, context, figure=None):
         if figure:
             # self.content.append(f"![]({figure})\n\n")
             # self.content += f"![]({figure})\n\n"
             # self.content += f"<html><img src='{figure}'/></html>"
             figure_basename = os.path.basename(figure)
             self.content += \
-                f"<html><p align='center'><img src='{figure}' alt='{figure_basename}'><br><em>{figure_basename}</em></p></html>"
+                f"<html><p align='center'><img src='{figure}' alt='{context}'><br><em>{figure_basename}</em></p></html>"
         else:
             print("No figure URL provided, the figure will not be added.")
 
@@ -1376,11 +1376,12 @@ def convert_info_md(img, res, save_folder, file_name, img_idx=None):
         if region['type'].lower() == 'figure':
             try:
                 caption = pick_caption(region, res, idx)
+                context = pick_context_for_figure(res, idx)
                 img_name = f"{caption}.jpg"
                 if img_idx:
                     img_name = "{}_{}.jpg".format(caption, img_idx)
                 fig_path = os.path.join(file_name, img_name)
-                md_out.add_figure(fig_path)
+                md_out.add_figure(context=context, figure=fig_path)
             except Exception as e:
                 print(f"[convert_info_md] add figure exception: {e}")
         elif region['type'].lower() == 'table':
@@ -1404,6 +1405,8 @@ def convert_info_md(img, res, save_folder, file_name, img_idx=None):
             
     md_path = os.path.join(save_folder, f'{file_name}.md')
     md_out.save(md_path)
+    os.sync()
+
 
 from copy import deepcopy
 import json
@@ -1466,6 +1469,7 @@ def save_structure_res(res, save_folder, img_name, img_idx=None):
                         img_name = "{}_{}.jpg".format(caption, img_idx)
                     img_path = os.path.join(resource_save_folder, img_name)
                     cv2.imwrite(img_path, roi_img)
+                    os.sync()
                 else:
                     excel_name = f"{caption}.xlsx"
                     if img_idx:
@@ -1479,26 +1483,72 @@ def save_structure_res(res, save_folder, img_name, img_idx=None):
                     img_name = "{}_{}.jpg".format(caption, img_idx)
                 img_path = os.path.join(resource_save_folder, img_name)
                 cv2.imwrite(img_path, roi_img)
+                os.sync()
 
 
 def pick_caption(region, res, idx):
     region_type = region['type'].lower()
     caption_type = f"{region_type}_caption"
+    print(f"------ need to pick caption for {idx}: {region_type} ------")
     last_region_idx = idx - 1
+    find_depth = 0
     while 0 <= last_region_idx < len(res):
+        if find_depth > 5:
+            print(f"------ can not find caption for {idx}: {region_type} ------\n")
+            break
         next_region_idx = idx + (idx - last_region_idx)
         region_idx_options = [last_region_idx, next_region_idx]
         for picked_region_idx in region_idx_options:
             if 0 <= picked_region_idx < len(res):
                 picked_region = res[picked_region_idx]
-                # print(f"idx: {picked_region_idx} region_type: {region_type}, {picked_region['type'].lower()}")
-                if picked_region['type'].lower() == caption_type:
-                    caption = ' '.join(it['text'] for it in picked_region['res'])
-                    return caption
+                picked_region_type = picked_region['type'].lower()
+                picked_region_content = ' '.join(it['text'] for it in picked_region['res']).strip()
+                if picked_region_content == '':
+                    continue
+                # print(f"idx: {picked_region_idx} {picked_region_type} \n{picked_region_content}")
+                if picked_region_type == caption_type:
+                    print(f"------ pick caption: {picked_region_content} for {idx}: {region_type} ------\n")
+                    return picked_region_content
         last_region_idx -= 1
+        find_depth += 1
     bbox_name = '-'.join(f"{box}" for box in region['bbox'])
     return bbox_name
 
 
+def pick_context_for_figure(res, idx):
+    print(f"------ need to pick context for {idx}: figure ------")
+    last_region_idx = idx - 1
+    find_depth = 0
+    context_pairs = ["", ""]
+
+    def extract_region_content_by_idx(res, picked_region_idx):
+        if 0 <= picked_region_idx < len(res):
+            picked_region = res[picked_region_idx]
+            picked_region_type = picked_region['type'].lower()
+            picked_region_content = ' '.join(it['text'] for it in picked_region['res'])
+            picked_region_content = picked_region_content.replace(" ", "")
+            picked_region_content = picked_region_content.replace("\n", "")
+            if picked_region_content == '' or picked_region_type != "text":
+                return None
+            return picked_region_content
+        return None
+
+    while 0 <= last_region_idx < len(res):
+        if find_depth > 5:
+            break
+        next_region_idx = idx + (idx - last_region_idx)
+        last_context = extract_region_content_by_idx(res, last_region_idx)
+        if last_context and context_pairs[0] == "":
+            context_pairs[0] = last_context
+        next_context = extract_region_content_by_idx(res, next_region_idx)
+        if next_context and context_pairs[1] == "":
+            context_pairs[1] = next_context
+        last_region_idx -= 1
+        find_depth += 1
+    print(f"------ pick context: {context_pairs} for {idx}: figure ------\n")
+    return '\n'.join(context_pairs)
+
+
 def to_excel(html_table, excel_path):
     document_to_xl(html_table, excel_path)
+    os.sync()
