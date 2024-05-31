@@ -1334,12 +1334,16 @@ class MarkdownDocument:
     def add_figure(self, figure=None):
         if figure:
             # self.content.append(f"![]({figure})\n\n")
-            self.content += f"![]({figure})\n\n"
+            # self.content += f"![]({figure})\n\n"
+            # self.content += f"<html><img src='{figure}'/></html>"
+            figure_basename = os.path.basename(figure)
+            self.content += \
+                f"<html><p align='center'><img src='{figure}' alt='{figure_basename}'><br><em>{figure_basename}</em></p></html>"
         else:
             print("No figure URL provided, the figure will not be added.")
 
     def add_table(self, table=None):
-        self.content += f"{table}\n\n"
+        self.content += f"<html>{table}</html>\n\n"
     
     def add_title(self, title, level=1):
         self.content += f"{'#' * level} {title}\n\n"
@@ -1366,13 +1370,16 @@ class MarkdownDocument:
         return
 
 
-def convert_info_md(img, res, save_folder, img_name):
+def convert_info_md(img, res, save_folder, file_name, img_idx=None):
     md_out = MarkdownDocument()
-    for i, region in enumerate(res):
+    for idx, region in enumerate(res):
         if region['type'].lower() == 'figure':
             try:
-                bbox_name = '-'.join(f"{box}" for box in region['bbox'])
-                fig_path = os.path.join(".", img_name, f"{bbox_name}_0.jpg")
+                caption = pick_caption(region, res, idx)
+                img_name = f"{caption}.jpg"
+                if img_idx:
+                    img_name = "{}_{}.jpg".format(caption, img_idx)
+                fig_path = os.path.join(file_name, img_name)
                 md_out.add_figure(fig_path)
             except Exception as e:
                 print(f"[convert_info_md] add figure exception: {e}")
@@ -1395,7 +1402,7 @@ def convert_info_md(img, res, save_folder, img_name):
             # txt = '\n'.join(it.get('text') for it in region['res'])
             # print(f"[convert_info_md] ignore {region['type'].lower()} : {txt}")
             
-    md_path = os.path.join(save_folder, f'{img_name}.md')
+    md_path = os.path.join(save_folder, f'{file_name}.md')
     md_out.save(md_path)
 
 from copy import deepcopy
@@ -1470,7 +1477,7 @@ def save_structure_res(res, save_folder, img_name, img_idx=None):
                 img_name = f"{caption}.jpg"
                 if img_idx:
                     img_name = "{}_{}.jpg".format(caption, img_idx)
-                img_path = os.path.join(resource_save_folder,img_name)
+                img_path = os.path.join(resource_save_folder, img_name)
                 cv2.imwrite(img_path, roi_img)
 
 
