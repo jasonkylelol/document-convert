@@ -26,7 +26,7 @@ from utils import (
 from table.table_det import Table
 from docx_chain.modules.layout_analysis import LayoutAnalysis
 
-device = "gpu"
+device = "npu"
 device_id = 0
 backend = 'default'
 
