@@ -9,6 +9,8 @@ import shutil
 import json
 import numpy as np
 import cv2
+import torch
+import torch_npu
 
 from latex.latex_rec import Latex2Text, sort_boxes
 from table.utils import TableMatch

@@ -19,10 +19,11 @@ from image import get_affine_transform
 
 class BaseDetector(object):
     def __init__(self, opt):
-        if opt.gpus[0] >= 0:
-            opt.device = torch.device('cuda')
-        else:
-            opt.device = torch.device('cpu')
+        # if opt.gpus[0] >= 0:
+        #     opt.device = torch.device('cuda')
+        # else:
+        #     opt.device = torch.device('cpu')
+        opt.device = torch.device('npu')
 
         self.model = create_model(opt.arch, opt.heads, opt.head_conv, opt.convert_onnx, {})
         self.model = load_model(self.model, opt.load_model)
