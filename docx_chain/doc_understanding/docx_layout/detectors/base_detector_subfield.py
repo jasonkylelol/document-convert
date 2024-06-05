@@ -162,11 +162,11 @@ class BaseDetector(object):
             # images = torch.from_numpy(images)
             
             images = images.to(self.opt.device)
-            torch.cuda.synchronize()
+            # torch.cuda.synchronize()
             pre_process_time = time.time()
             pre_time += pre_process_time - scale_start_time
             output, dets, dets_sub, corner, forward_time = self.process(images, return_time=True)
-            torch.cuda.synchronize()
+            # torch.cuda.synchronize()
             net_time += forward_time - pre_process_time
             decode_time = time.time()
             dec_time += decode_time - forward_time
@@ -184,7 +184,7 @@ class BaseDetector(object):
                 dets_sub[j] = self.Duplicate_removal(dets_sub[j])
                 
             # import ipdb;ipdb.set_trace()   
-            torch.cuda.synchronize()
+            # torch.cuda.synchronize()
             post_process_time = time.time()
             post_time += post_process_time - decode_time
             
@@ -194,7 +194,7 @@ class BaseDetector(object):
             detections.append(dets)
 
         results = self.merge_outputs(detections)
-        torch.cuda.synchronize()
+        # torch.cuda.synchronize()
         end_time = time.time()
         merge_time += end_time - post_process_time
         tot_time += end_time - start_time
