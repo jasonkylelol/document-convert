@@ -1,30 +1,16 @@
-# gpu-cuda11.2-cudnn8.2-trt8.0
-# python=3.7.13
-
-beautifulsoup4>=4.12.2
-lxml>=4.9.2
-onnxruntime>=1.14.1
-onnxruntime_gpu==1.14.1
-opencv_contrib_python==4.9.0.80
-opencv_python==4.9.0.80
-opencv_python_headless==4.9.0.80
-openpyxl==3.1.2
-Pillow==9.5.0
-premailer==3.10.0
-pyclipper==1.3.0.post4
-pyinstrument==4.5.1
-PyMuPDF==1.19.0
-python_docx==0.8.11
-PyYAML==6.0
-scipy
-Shapely==2.0.1
-# torch==1.10.1
-# torchvision==0.11.2
-munch>=2.5.0
-transformers>=4.18.0
-# timm==0.5.4
-einops>=0.3.0
+torch==2.1.0
+torch-npu==2.1.0.post3
+torchvision
+timm
+transformers
+einops==0.3.0
+munch==2.5.0
 x_transformers==0.15.0
-albumentations>=0.5.2
+albumentations==0.5.2
 cnstd==1.2.3.3
+python_docx==0.8.11
+beautifulsoup4==4.12.2
+openpyxl==3.1.2
+premailer==3.10.0
+PyMuPDF==1.19.0
 ipdb==0.13.13
