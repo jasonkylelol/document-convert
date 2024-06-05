@@ -458,7 +458,7 @@ class Latex2Text(object):
             formula_config,
             device,
         )
-        print("[latex.latex_rec] analyzer_config: ", **analyzer_config)
+        print("[latex.latex_rec] analyzer_config: ", analyzer_config)
         self.analyzer = LayoutAnalyzer(**analyzer_config)
 
         _clf_config = deepcopy(clf_config)
