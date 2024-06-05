@@ -1502,7 +1502,13 @@ def pick_caption(region, res, idx):
             if 0 <= picked_region_idx < len(res):
                 picked_region = res[picked_region_idx]
                 picked_region_type = picked_region['type'].lower()
-                picked_region_content = ' '.join(it['text'] for it in picked_region['res']).strip()
+                if not isinstance(picked_region['res'], list):
+                    continue
+                text_list = []
+                for it in picked_region['res']:
+                    if it.get('text'):
+                        text_list.append(it.get('text'))
+                picked_region_content = ' '.join(text_list).strip()
                 if picked_region_content == '':
                     continue
                 # print(f"idx: {picked_region_idx} {picked_region_type} \n{picked_region_content}")
