@@ -28,7 +28,7 @@ class CtdetDetector_Subfield(BaseDetector):
         with torch.no_grad():
             output = self.model(images)[-1]
             if self.opt.convert_onnx == 1:
-                torch.cuda.synchronize()
+                # torch.cuda.synchronize()
                 inputs = ['data']
                 outputs = ['hm.0.sigmoid', 'hm.0.maxpool', 'cls.0.sigmoid', 'ftype.0.sigmoid', 'wh.2', 'reg.2', 'hm_sub.0.sigmoid', 'hm_sub.0.maxpool', 'wh_sub.2', 'reg_sub.2' ]
                 dynamic_axes = {'data': {2: 'h', 3: 'w'}, 'hm.0.sigmoid': {2: 'H', 3: 'W'},
@@ -76,7 +76,7 @@ class CtdetDetector_Subfield(BaseDetector):
                 hm = (hm[0:1] + flip_tensor(hm[1:2])) / 2
                 wh = (wh[0:1] + flip_tensor(wh[1:2])) / 2
                 reg = reg[0:1] if reg is not None else None
-            torch.cuda.synchronize()
+            # torch.cuda.synchronize()
             forward_time = time.time()
             # return dets [bboxes, scores, clses]
             dets, inds = ctdet_4ps_decode(hm, wh, reg=reg, K=self.opt.K)
