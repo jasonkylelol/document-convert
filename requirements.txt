@@ -1,5 +1,4 @@
 torch==1.11.0
-# torch-npu==2.1.0.post3
 pyyaml
 setuptools
 torchvision
@@ -9,13 +8,15 @@ einops==0.3.0
 munch==2.5.0
 x_transformers==0.15.0
 albumentations==0.5.2
-# cnstd==1.2.3.3
 python_docx==0.8.11
 beautifulsoup4==4.12.2
 openpyxl==3.1.2
 premailer==3.10.0
 PyMuPDF==1.19.0
 ipdb==0.13.13
-requests==2.32.3
+requests
+cnstd
+onnxruntime
 
-# pip install -i https://pypi.tuna.tsinghua.edu.cn/simple torch==1.11.0 pyyaml setuptools torchvision transformers timm einops 
+# pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --force-reinstall FastDeploy/python/dist/fastdeploy_python-0.0.0-cp37-cp37m-linux_aarch64.whl jinja2 absl-py cloudpickle tornado
+# pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --force-reinstall scikit-image scikit-learn
