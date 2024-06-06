@@ -1,5 +1,3 @@
-import sklearn
-import skimage
 import argparse
 import os, sys
 import time
@@ -28,7 +26,7 @@ from utils import (
 from table.table_det import Table
 from docx_chain.modules.layout_analysis import LayoutAnalysis
 
-device = "npu"
+device = "cpu"
 device_id = 0
 backend = 'default'
 
@@ -202,6 +200,7 @@ def text_system(img, thre = 0.5):
             and i < len(result.text):
             bbox.append(np.reshape(result.boxes[i], (4, 2)))
             rec.append((result.text[i],result.rec_scores[i]))
+    print("[pporc predict] cost {:.2f}".format(time.time() - time1))
     return bbox, rec, time.time() - time1
 
 
@@ -303,7 +302,8 @@ def process_predict(pdf_info, save_folder, img_idx=0):
                 # os.makedirs(wht_img_output, exist_ok=True)
                 # cv2.imwrite(os.path.join(wht_img_output, f"{page_idx}_{region_idx}_{region['label']}.jpg"), wht_im)
 
-                lax_img, mf_out = latex_analyzer.recognize_by_cnstd(wht_im, resized_shape=608)
+                # lax_img, mf_out = latex_analyzer.recognize_by_cnstd(wht_im, resized_shape=608)
+                mf_out = None
                 if mf_out == None:
                     filter_boxes, filter_rec_res, ocr_time_dict = text_system(wht_im)
                     style_token = [
