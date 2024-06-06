@@ -28,9 +28,9 @@ def parse_arguments():
     parser.add_argument(
         "--cls_model", required=True, help="Path of Classification model of PPOCR."
     )
-    parser.add_argument(
-        "--rec_model", required=True, help="Path of Recognization model of PPOCR."
-    )
+    # parser.add_argument(
+    #     "--rec_model", required=True, help="Path of Recognization model of PPOCR."
+    # )
     parser.add_argument(
         "--rec_label_file", required=True, help="Path of Recognization model of PPOCR."
     )
@@ -57,8 +57,8 @@ args = parse_arguments()
 det_model_file = os.path.join(args.det_model, "inference.pdmodel")
 det_params_file = os.path.join(args.det_model, "inference.pdiparams")
 
-cls_model_file = os.path.join(args.cls_model, "inference.pdmodel")
-cls_params_file = os.path.join(args.cls_model, "inference.pdiparams")
+# cls_model_file = os.path.join(args.cls_model, "inference.pdmodel")
+# cls_params_file = os.path.join(args.cls_model, "inference.pdiparams")
 
 rec_model_file = os.path.join(args.rec_model, "inference.pdmodel")
 rec_params_file = os.path.join(args.rec_model, "inference.pdiparams")
@@ -70,9 +70,9 @@ det_model = fd.vision.ocr.DBDetector(
     det_model_file, det_params_file, runtime_option=det_option
 )
 
-cls_model = fd.vision.ocr.Classifier(
-    cls_model_file, cls_params_file, runtime_option=cls_option
-)
+# cls_model = fd.vision.ocr.Classifier(
+#     cls_model_file, cls_params_file, runtime_option=cls_option
+# )
 
 rec_model = fd.vision.ocr.Recognizer(
     rec_model_file, rec_params_file, rec_label_file, runtime_option=rec_option
@@ -85,7 +85,8 @@ rec_model.preprocessor.static_shape_infer = True
 # Create PP-OCRv3, if cls_model is not needed,
 # just set cls_model=None .
 ppocr_v3 = fd.vision.ocr.PPOCRv3(
-    det_model=det_model, cls_model=cls_model, rec_model=rec_model
+    # det_model=det_model, cls_model=cls_model, rec_model=rec_model
+    det_model=det_model, cls_model=None, rec_model=rec_model
 )
 
 # The batch size must be set to 1, when enable static shape infer.
