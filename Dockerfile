@@ -14,5 +14,6 @@ RUN pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt
 run pip install /build/dist/*
 
 add github/FastDeploy/python/fastdeploy/libs/third_libs/opencv/lib/ /usr/local/fastdeploy/libs/third_libs/opencv/lib
+run echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/fastdeploy/libs/third_libs/opencv/lib' >> /root/.bashrc
 
 run rm -rf /build
