@@ -11,9 +11,8 @@ add github/pytorch/dist/* /build/dist/
 COPY github/document-convert/requirements.txt requirements.txt
 RUN pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --upgrade pip setuptools wheel
 RUN pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt 
-run pip install /build/dist/* jinja2 absl-py cloudpickle tornado
+run pip install /build/dist/*
 
 add github/FastDeploy/python/fastdeploy/libs/third_libs/opencv/lib/ /usr/local/fastdeploy/libs/third_libs/opencv/lib
-run export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/fastdeploy/libs/third_libs/opencv/lib
 
 run rm -rf /build

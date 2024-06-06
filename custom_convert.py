@@ -94,8 +94,8 @@ def load_model(
 
     if device.lower() == "gpu":
         model_option.use_gpu(device_id)
-    # elif device.lower() == "npu":
-    #     model_option.use_ascend()
+    elif device.lower() == "npu":
+        model_option.use_ascend()
     
     if backend.lower() == "trt":
         model_option.use_trt_backend()
@@ -128,8 +128,8 @@ def load_model(
 
     if device.lower() == "gpu":
         model_option.use_gpu(device_id)
-    # elif device.lower() == "npu":
-    #     model_option.use_ascend()
+    elif device.lower() == "npu":
+        model_option.use_ascend()
     
     if backend.lower() == "trt":
         model_option.use_tensorrt()

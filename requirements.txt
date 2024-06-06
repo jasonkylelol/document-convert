@@ -19,6 +19,10 @@ cnstd
 onnxruntime
 scikit-image
 scikit-learn
+jinja2
+absl-py
+cloudpickle
+tornado
 
 # pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --force-reinstall FastDeploy/python/dist/fastdeploy_python-0.0.0-cp37-cp37m-linux_aarch64.whl jinja2 absl-py cloudpickle tornado
 # pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --force-reinstall scikit-image scikit-learn
