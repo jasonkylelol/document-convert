@@ -1,6 +1,7 @@
 from paddle-npu:cann80RC1-ubuntu20-aarch64-gcc84-py310-dev
 
-add github/FastDeploy/python/dist /build/dist
+add github/FastDeploy/python/dist/* /build/dist/
+add github/pytorch/dist/* /build/dist/
 run pip3 install /build/dist/*
 
 add github/FastDeploy/python/build/lib.linux-aarch64-cpython-310/fastdeploy/libs/third_libs/opencv/lib /usr/local/fastdeploy/libs/third_libs/opencv/lib
