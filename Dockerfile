@@ -1,4 +1,4 @@
-from paddle-npu:cann80RC1-ubuntu20-aarch64-gcc84-py310-dev
+from paddle-npu-base:py37-cann8_0_rc1-aarch64
 
 WORKDIR /workspace
 
