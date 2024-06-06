@@ -25,12 +25,12 @@ def parse_arguments():
     parser.add_argument(
         "--det_model", required=True, help="Path of Detection model of PPOCR."
     )
-    parser.add_argument(
-        "--cls_model", required=True, help="Path of Classification model of PPOCR."
-    )
     # parser.add_argument(
-    #     "--rec_model", required=True, help="Path of Recognization model of PPOCR."
+    #     "--cls_model", required=True, help="Path of Classification model of PPOCR."
     # )
+    parser.add_argument(
+        "--rec_model", required=True, help="Path of Recognization model of PPOCR."
+    )
     parser.add_argument(
         "--rec_label_file", required=True, help="Path of Recognization model of PPOCR."
     )
