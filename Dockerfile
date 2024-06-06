@@ -1,3 +1,4 @@
+# https://github.com/PaddlePaddle/FastDeploy/blob/develop/docs/cn/build_and_install/huawei_ascend.md#%E4%BD%BF%E7%94%A8docker%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83
 from paddle-npu-base:py37-cann8_0_rc1-aarch64
 
 WORKDIR /workspace
