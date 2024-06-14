@@ -88,9 +88,11 @@ class OrtInferSession:
             EP_list = [(cuda_ep, cuda_provider_options)]
         EP_list.append((cpu_ep, cpu_provider_options))
 
-        self._verify_model(config["model_path"])
+        model_path = os.path.join(os.path.dirname(__file__), config["model_path"])
+
+        self._verify_model(model_path)
         self.session = InferenceSession(
-            config["model_path"], sess_options=sess_opt, providers=EP_list
+            model_path, sess_options=sess_opt, providers=EP_list
         )
 
         if config["use_cuda"] and cuda_ep not in self.session.get_providers():

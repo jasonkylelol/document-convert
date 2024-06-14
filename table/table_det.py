@@ -1,4 +1,4 @@
-
+import os
 import argparse
 import copy
 import math
@@ -100,7 +100,9 @@ class RebuildTable(object):
 
 
 class Table:
-    def __init__(self, config):
+    def __init__(self):
+        table_config_path = os.path.join(os.path.dirname(__file__), "table_config.yaml")
+        config = read_yaml(table_config_path)
 
         session = OrtInferSession(config)
         self.predictor, self.input_tensor, self.output_tensors, self.config = session, session.session.get_inputs()[0], None, None
@@ -134,9 +136,10 @@ class Table:
                 resize_op, pad_op, normalize_op, to_chw_op, keep_keys_op
             ]
 
+        table_char_dict_path = os.path.join(os.path.dirname(__file__), config['table_char_dict_path'])
         postprocess_params = {
                 'name': 'TableLabelDecode',
-                "character_dict_path": config['table_char_dict_path'],
+                "character_dict_path": table_char_dict_path,
                 'merge_no_span_structure': config['merge_no_span_structure']
             }
 
@@ -166,6 +169,8 @@ class Table:
 
         shape_list = np.expand_dims(data[-1], axis=0)
         post_result = self.postprocess_op(preds, [shape_list])
+
+        # print(f"Table post_result: {post_result}")
 
         structure_str_list = post_result['structure_batch_list'][0]
         bbox_list = post_result['bbox_batch_list'][0]
