@@ -3,5 +3,5 @@ PyMuPDF==1.19.0
 python_docx==0.8.11
 munch>=2.5.0
 x_transformers==0.15.0
-# cnstd==1.2.3.3 # TODO(remove)
-# protobuf==3.20.2
+cnstd==1.2.3.3
+protobuf==3.20.2
