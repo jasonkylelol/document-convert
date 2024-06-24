@@ -88,9 +88,11 @@ class OrtInferSession:
             EP_list = [(cuda_ep, cuda_provider_options)]
         EP_list.append((cpu_ep, cpu_provider_options))
 
-        self._verify_model(config["model_path"])
+        model_path = os.path.join(os.path.dirname(__file__), config["model_path"])
+
+        self._verify_model(model_path)
         self.session = InferenceSession(
-            config["model_path"], sess_options=sess_opt, providers=EP_list
+            model_path, sess_options=sess_opt, providers=EP_list
         )
 
         if config["use_cuda"] and cuda_ep not in self.session.get_providers():
@@ -143,7 +145,7 @@ class OrtInferSession:
 class ONNXRuntimeError(Exception):
     pass
 
-def download_and_extract_models(model_url='https://molar-public.oss-cn-hangzhou.aliyuncs.com/models.tar.gz', models_folder='models'): 
+def download_and_extract_models(model_url='https://molar-public.oss-cn-hangzhou.aliyuncs.com/models.tar.gz', models_folder='models'):
     try:
         if not os.path.exists(models_folder):
             os.makedirs(models_folder)
@@ -1326,7 +1328,7 @@ class aggr():
         end = time.time()
         time_dict['all'] = end - start
         return filter_boxes, filter_rec_res, time_dict
-    
+
 class MarkdownDocument:
     def __init__(self):
         self.content = ""
@@ -1344,7 +1346,7 @@ class MarkdownDocument:
 
     def add_table(self, table=None):
         self.content += f"<html>{table}</html>\n\n"
-    
+
     def add_title(self, title, level=1):
         self.content += f"{'#' * level} {title}\n\n"
 
@@ -1362,7 +1364,7 @@ class MarkdownDocument:
         self.content += "\n"
     def get_markdown(self):
         return self.content
-    
+
     def save(self, path):
         with open(path, 'w') as f:
             f.write(self.get_markdown())
@@ -1373,7 +1375,8 @@ class MarkdownDocument:
 def convert_info_md(img, res, save_folder, file_name, img_idx=None):
     md_out = MarkdownDocument()
     for idx, region in enumerate(res):
-        if region['type'].lower() == 'figure':
+        if region['type'].lower() == 'figure'or \
+            region['type'].lower() == 'equation':
             try:
                 caption = pick_caption(region, res, idx)
                 context = pick_context_for_figure(res, idx)
@@ -1402,7 +1405,7 @@ def convert_info_md(img, res, save_folder, file_name, img_idx=None):
             pass
             # txt = '\n'.join(it.get('text') for it in region['res'])
             # print(f"[convert_info_md] ignore {region['type'].lower()} : {txt}")
-            
+
     md_path = os.path.join(save_folder, f'{file_name}.md')
     md_out.save(md_path)
     os.sync()
@@ -1431,10 +1434,10 @@ def read_image(image_file) -> list:
                 img = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
                 imgs.append(img)
 
-                basename = os.path.basename(image_file)
-                fitz_img_output = os.path.join("output", basename, "fitz_img")
-                os.makedirs(fitz_img_output, exist_ok=True)
-                cv2.imwrite(os.path.join(fitz_img_output, f"{pg}.jpg"), img)
+                # basename = os.path.basename(image_file)
+                # fitz_img_output = os.path.join("output", basename, "fitz_img")
+                # os.makedirs(fitz_img_output, exist_ok=True)
+                # cv2.imwrite(os.path.join(fitz_img_output, f"{pg}.jpg"), img)
     else:
         img = cv2.imread(image_file, cv2.IMREAD_COLOR)
         if img is not None:
@@ -1443,47 +1446,35 @@ def read_image(image_file) -> list:
     return imgs
 
 
-def save_structure_res(res, save_folder, img_name, img_idx=None):
+def save_structure_res(res, save_folder, img_name):
     resource_save_folder = os.path.join(save_folder, img_name)
     os.makedirs(resource_save_folder, exist_ok=True)
     res_cp = deepcopy(res)
     # save res
-    res_txt = "res.txt"
-    if img_idx:
-        res_txt = "res_{}.txt".format(img_idx)
-    with open(os.path.join(resource_save_folder, res_txt), 'w', encoding='utf8') as f:
-        for idx, region in enumerate(res_cp):
-            roi_img = region.pop('img')
-            try:
-                f.write('{}\n'.format(json.dumps(region)))
-            except Exception as e:
-                print(e)
-                print(region)
-
-            if region['type'].lower() == 'table' and len(region[
-                    'res']) > 0 and 'html' in region['res']:
-                caption = pick_caption(region, res_cp, idx)
-                if region['res']['html'] is None:
-                    img_name = f"{caption}.jpg"
-                    if img_idx:
-                        img_name = "{}_{}.jpg".format(caption, img_idx)
-                    img_path = os.path.join(resource_save_folder, img_name)
-                    cv2.imwrite(img_path, roi_img)
-                    os.sync()
-                else:
-                    excel_name = f"{caption}.xlsx"
-                    if img_idx:
-                        excel_name = "{}_{}.xlsx".format(caption, img_idx)
-                    excel_path = os.path.join(resource_save_folder, excel_name)
-                    to_excel(region['res']['html'], excel_path)
-            elif region['type'].lower() == 'figure':
-                caption = pick_caption(region, res_cp, idx)
+    # res_txt = "res.txt"
+    # with open(os.path.join(resource_save_folder, res_txt), 'w', encoding='utf8') as f:
+        # f.write('{}\n'.format(json.dumps(res_cp)))
+    for idx, region in enumerate(res_cp):
+        roi_img = region.pop('img')
+        if region['type'].lower() == 'table' and len(region[
+                'res']) > 0 and 'html' in region['res']:
+            caption = pick_caption(region, res_cp, idx)
+            if region['res']['html'] is None:
                 img_name = f"{caption}.jpg"
-                if img_idx:
-                    img_name = "{}_{}.jpg".format(caption, img_idx)
                 img_path = os.path.join(resource_save_folder, img_name)
                 cv2.imwrite(img_path, roi_img)
                 os.sync()
+            else:
+                excel_name = f"{caption}.xlsx"
+                excel_path = os.path.join(resource_save_folder, excel_name)
+                to_excel(region['res']['html'], excel_path)
+        elif region['type'].lower() == 'figure' or \
+            region['type'].lower() == 'equation':
+            caption = pick_caption(region, res_cp, idx)
+            img_name = f"{caption}.jpg"
+            img_path = os.path.join(resource_save_folder, img_name)
+            cv2.imwrite(img_path, roi_img)
+            os.sync()
 
 
 def pick_caption(region, res, idx):

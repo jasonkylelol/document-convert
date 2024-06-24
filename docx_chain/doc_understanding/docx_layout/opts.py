@@ -42,6 +42,8 @@ class opts(object):
                                       'in the exp dir if load_model is empty.')
 
         # system
+        self.parser.add_argument('--device', default='cpu',
+                                 help='device')
         self.parser.add_argument('--gpus', default='0',
                                  help='-1 for CPU, use comma for multiple gpus')
         self.parser.add_argument('--num_workers', type=int, default=16,

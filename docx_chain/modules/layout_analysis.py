@@ -32,6 +32,7 @@ class LayoutAnalysis(object):
             params = {
                 'model_file': configs['model_path'],
                 'debug': 0, # 1: save vis results, 0: don't save
+                'device': configs['device'],
             }
 
             # load map information

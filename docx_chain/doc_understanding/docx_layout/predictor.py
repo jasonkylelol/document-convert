@@ -30,6 +30,7 @@ class DocXLayoutPredictor:
     def __init__(self, params):
         model_file = params["model_file"]
         debug = params["debug"]
+        device = params["device"]
         
         new_params = {
             'task': 'ctdet_subfield',
@@ -37,7 +38,8 @@ class DocXLayoutPredictor:
             'input_res': 768,
             'num_classes': 13,
             'load_model': model_file,
-            'debug': debug, 
+            'debug': debug,
+            'device': device,
         }
 
         opt = opts().parse(new_params)
