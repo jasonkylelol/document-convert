@@ -13,9 +13,7 @@ RUN /root/miniconda3/bin/conda create -y -n langchain python=3.11
 
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
-# RUN pip install timm==0.5.4 --no-deps -i https://pypi.tuna.tsinghua.edu.cn/simple
 
-# wget -c -t 100 -P /home/ https://github.com/AlibabaResearch/AdvancedLiterateMachinery/releases/download/v1.2.0-docX-release/DocXLayout_231012.pth
 ADD models/docx_layout_231012.pth models/docx_layout_231012.pth
 ADD models/ocr-detection models/ocr-detection
 ADD models/ocr-recognition models/ocr-recognition
