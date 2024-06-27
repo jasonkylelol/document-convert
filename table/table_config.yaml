@@ -1,4 +1,4 @@
-model_path: models/table_infer_en.onnx
+model_path: models/table_infer_ch.onnx
 
 use_cuda: true
 CUDAExecutionProvider:
@@ -9,5 +9,5 @@ CUDAExecutionProvider:
 
 table_algorithm: TableAttn
 table_max_len: 488
-table_char_dict_path: table_structure_dict.txt
+table_char_dict_path: table_structure_dict_ch.txt
 merge_no_span_structure: true
