@@ -7,7 +7,7 @@ from PIL import Image, ImageDraw
 
 # RapidTable类提供model_path参数，可以自行指定上述2个模型，默认是en_ppstructure_mobile_v2_SLANet.onnx
 # table_engine = RapidTable(model_path='ch_ppstructure_mobile_v2_SLANet.onnx')
-table_model_path = "/root/huggingface/models/tsr/ch_ppstructure_mobile_v2.0_SLANet_infer/ch_ppstructure_mobile_v2_SLANet.onnx"
+table_model_path = "/root/huggingface/models/paddle-tsr/ch_ppstructure_mobile_v2.0_SLANet_infer/ch_ppstructure_mobile_v2_SLANet.onnx"
 table_engine = RapidTable(model_path=table_model_path)
 ocr_engine = RapidOCR()
 viser = VisTable()
